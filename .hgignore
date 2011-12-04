@@ -1,0 +1,5 @@
+syntax: glob
+*.suo
+*.pidb
+ImpressiveSolids/bin/*
+ImpressiveSolids/obj/*
