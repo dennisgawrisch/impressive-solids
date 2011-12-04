@@ -27,13 +27,23 @@ namespace ImpressiveSolids {
         private const int MapHeight = 13;
 
         private int[,] Map;
+        private float[,] ImpactFallOffset;
 
         private const int StickLength = 3;
         private int[] StickColors;
         private Vector2 StickPosition;
 
+        private const float FallSpeed = 0.2f;
+
         private const int ColorsCount = 5;
         private Color4[] Colors = {Color4.PaleVioletRed, Color4.LightSeaGreen, Color4.CornflowerBlue, Color4.RosyBrown, Color4.LightGoldenrodYellow};
+
+        private enum GameStateEnum {
+            Fall,
+            Impact,
+            GameOver
+        }
+        private GameStateEnum GameState;
 
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
@@ -56,8 +66,11 @@ namespace ImpressiveSolids {
                 }
             }
 
+            ImpactFallOffset = new float[MapWidth, MapHeight];
+
             StickColors = new int[StickLength];
             GenerateNextStick();
+            GameState = GameStateEnum.Fall;
         }
 
         private void GenerateNextStick() {
@@ -82,30 +95,53 @@ namespace ImpressiveSolids {
 
         protected override void OnUpdateFrame(FrameEventArgs E) {
             base.OnUpdateFrame(E);
-            
-            StickPosition.Y += 0.02f;
 
-            var FellOnFloor = (StickPosition.Y >= MapHeight - 1);
+            if (GameStateEnum.Fall == GameState) {
+                StickPosition.Y += FallSpeed;
 
-            var FellOnBlock = false;
-            if (!FellOnFloor) {
-                var Y = (int)Math.Floor(StickPosition.Y + 1);
-                for (var i = 0; i < StickLength; i++) {
-                    var X = (int)StickPosition.X + i;
-                    if (Map[X, Y] >= 0) {
-                        FellOnBlock = true;
-                        break;
+                var FellOnFloor = (StickPosition.Y >= MapHeight - 1);
+
+                var FellOnBlock = false;
+                if (!FellOnFloor) {
+                    var Y = (int)Math.Floor(StickPosition.Y + 1);
+                    for (var i = 0; i < StickLength; i++) {
+                        var X = (int)StickPosition.X + i;
+                        if (Map[X, Y] >= 0) {
+                            FellOnBlock = true;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (FellOnFloor || FellOnBlock) {
-                var Y = (int)Math.Floor(StickPosition.Y);
-                for (var i = 0; i < StickLength; i++) {
-                    var X = (int)StickPosition.X + i;
-                    Map[X, Y] = StickColors[i];
+                if (FellOnFloor || FellOnBlock) {
+                    var Y = (int)Math.Floor(StickPosition.Y);
+                    for (var i = 0; i < StickLength; i++) {
+                        var X = (int)StickPosition.X + i;
+                        Map[X, Y] = StickColors[i];
+                    }
+                    GameState = GameStateEnum.Impact;
                 }
-                GenerateNextStick();
+            } else if (GameStateEnum.Impact == GameState) {
+                var Stabilized = true;
+                for (var X = 0; X < MapWidth; X++) {
+                    for (var Y = 0; Y < MapHeight - 1; Y++) {
+                        if ((Map[X, Y] >= 0) && (Map[X, Y + 1] < 0)) {
+                            ImpactFallOffset[X, Y] += FallSpeed;
+                            if (ImpactFallOffset[X, Y] >= 1) {
+                                Map[X, Y + 1] = Map[X, Y];
+                                Map[X, Y] = -1;
+                                ImpactFallOffset[X, Y] = 0;
+                            } else {
+                                Stabilized = false;
+                            }
+                        }
+                    }
+                }
+
+                if (Stabilized) {
+                    GenerateNextStick();
+                    GameState = GameStateEnum.Fall;
+                }
             }
         }
 
@@ -143,13 +179,15 @@ namespace ImpressiveSolids {
             for (var X = 0; X < MapWidth; X++) {
                 for (var Y = 0; Y < MapHeight; Y++) {
                     if (Map[X, Y] >= 0) {
-                        RenderSolid(X, Y, Map[X, Y]);
+                        RenderSolid(X, Y + ImpactFallOffset[X, Y], Map[X, Y]);
                     }
                 }
             }
 
-            for (var i = 0; i < StickLength; i++) {
-                RenderSolid(StickPosition.X + i, StickPosition.Y, StickColors[i]);
+            if (GameStateEnum.Fall == GameState) {
+                for (var i = 0; i < StickLength; i++) {
+                    RenderSolid(StickPosition.X + i, StickPosition.Y, StickColors[i]);
+                }
             }
 
             GL.End();
