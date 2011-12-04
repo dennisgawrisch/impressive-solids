@@ -124,15 +124,14 @@ namespace ImpressiveSolids {
             } else if (GameStateEnum.Impact == GameState) {
                 var Stabilized = true;
                 for (var X = 0; X < MapWidth; X++) {
-                    for (var Y = 0; Y < MapHeight - 1; Y++) {
-                        if ((Map[X, Y] >= 0) && (Map[X, Y + 1] < 0)) {
+                    for (var Y = MapHeight - 2; Y >= 0; Y--) {
+                        if ((Map[X, Y] >= 0) && ((Map[X, Y + 1] < 0) || (ImpactFallOffset[X, Y + 1] > 0))) {
+                            Stabilized = false;
                             ImpactFallOffset[X, Y] += FallSpeed;
                             if (ImpactFallOffset[X, Y] >= 1) {
                                 Map[X, Y + 1] = Map[X, Y];
                                 Map[X, Y] = -1;
                                 ImpactFallOffset[X, Y] = 0;
-                            } else {
-                                Stabilized = false;
                             }
                         }
                     }
