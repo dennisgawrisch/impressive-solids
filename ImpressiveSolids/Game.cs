@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -44,6 +45,9 @@ namespace ImpressiveSolids {
             GameOver
         }
         private GameStateEnum GameState;
+
+        private const int DestroyableLength = 3;
+        private Stack<Vector2> Destroyables = new Stack<Vector2>();
 
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
@@ -123,7 +127,8 @@ namespace ImpressiveSolids {
                 }
             } else if (GameStateEnum.Impact == GameState) {
                 var Stabilized = true;
-                for (var X = 0; X < MapWidth; X++) {
+
+                for (var X = 0; X < MapWidth; X++) { // TODO FIXME when two block stand on each other and there is a hole below, only the lower block falls, but both have to
                     for (var Y = 0; Y < MapHeight - 1; Y++) {
                         if ((Map[X, Y] >= 0) && (Map[X, Y + 1] < 0)) {
                             ImpactFallOffset[X, Y] += FallSpeed;
@@ -139,8 +144,48 @@ namespace ImpressiveSolids {
                 }
 
                 if (Stabilized) {
+                    Destroyables.Clear();
+                    
+                    for (var X = 0; X < MapWidth; X++) {
+                        for (var Y = 0; Y < MapHeight; Y++) {
+                            CheckDestroyableLine(X, Y, 1, 0);
+                            CheckDestroyableLine(X, Y, 0, 1);
+                            CheckDestroyableLine(X, Y, 1, 1);
+                            CheckDestroyableLine(X, Y, 1, -1);
+                        }
+                    }
+
+                    if (Destroyables.Count > 0) {
+                        foreach (var Coords in Destroyables) {
+                            Map[(int)Coords.X, (int)Coords.Y] = -1;
+                        }
+                        Stabilized = false;
+                    }
+                }
+
+                if (Stabilized) {
                     GenerateNextStick();
                     GameState = GameStateEnum.Fall;
+                }
+            }
+        }
+
+        private void CheckDestroyableLine(int X1, int Y1, int DeltaX, int DeltaY) {
+            if (Map[X1, Y1] < 0) {
+                return;
+            }
+
+            int X2 = X1, Y2 = Y1;
+            var LineLength = 0;
+            while ((X2 >= 0) && (Y2 >= 0) && (X2 < MapWidth) && (Y2 < MapHeight) && (Map[X2, Y2] == Map[X1, Y1])) {
+                ++LineLength;
+                X2 += DeltaX;
+                Y2 += DeltaY;
+            }
+
+            if (LineLength >= DestroyableLength) {
+                for (var i = 0; i < LineLength; i++) {
+                    Destroyables.Push(new Vector2(X1 + i * DeltaX, Y1 + i * DeltaY));
                 }
             }
         }
