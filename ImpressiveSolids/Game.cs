@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -37,7 +38,7 @@ namespace ImpressiveSolids {
         private const float FallSpeed = 0.2f;
 
         private const int ColorsCount = 5;
-        private Color4[] Colors = {Color4.PaleVioletRed, Color4.LightSeaGreen, Color4.CornflowerBlue, Color4.RosyBrown, Color4.LightGoldenrodYellow};
+        private Color4[] Colors = { Color4.PaleVioletRed, Color4.LightSeaGreen, Color4.CornflowerBlue, Color4.RosyBrown, Color4.LightGoldenrodYellow };
 
         private enum GameStateEnum {
             Fall,
@@ -49,10 +50,13 @@ namespace ImpressiveSolids {
         private const int DestroyableLength = 3;
         private Stack<Vector2> Destroyables = new Stack<Vector2>();
 
+        private Texture TextureBackground;
+
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
             VSync = VSyncMode.On;
             Keyboard.KeyDown += new EventHandler<KeyboardKeyEventArgs>(OnKeyDown);
+            TextureBackground = new Texture(new Bitmap("textures/background.png"));
         }
 
         protected override void OnLoad(EventArgs E) {
@@ -84,7 +88,7 @@ namespace ImpressiveSolids {
             StickPosition.X = (float)Math.Floor((MapWidth - StickLength) / 2d);
             StickPosition.Y = 0;
         }
-        
+
         protected override void OnResize(EventArgs E) {
             base.OnResize(E);
             GL.Viewport(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height);
@@ -143,7 +147,7 @@ namespace ImpressiveSolids {
 
                 if (Stabilized) {
                     Destroyables.Clear();
-                    
+
                     for (var X = 0; X < MapWidth; X++) {
                         for (var Y = 0; Y < MapHeight; Y++) {
                             CheckDestroyableLine(X, Y, 1, 0);
@@ -235,6 +239,8 @@ namespace ImpressiveSolids {
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref Modelview);
 
+            RenderBackground();
+
             GL.Begin(BeginMode.Quads);
 
             for (var X = 0; X < MapWidth; X++) {
@@ -254,6 +260,28 @@ namespace ImpressiveSolids {
             GL.End();
 
             SwapBuffers();
+        }
+
+        private void RenderBackground() {
+            GL.Enable(EnableCap.Texture2D);
+            TextureBackground.Bind();
+            GL.Color4(Color4.Transparent);
+            GL.Begin(BeginMode.Quads);
+
+            GL.TexCoord2(0, 0);
+            GL.Vertex2(0, 0);
+
+            GL.TexCoord2((float)ClientRectangle.Width / TextureBackground.Width, 0);
+            GL.Vertex2(ProjectionWidth, 0);
+
+            GL.TexCoord2((float)ClientRectangle.Width / TextureBackground.Width, (float)ClientRectangle.Height / TextureBackground.Height);
+            GL.Vertex2(ProjectionWidth, ProjectionHeight);
+
+            GL.TexCoord2(0, (float)ClientRectangle.Height / TextureBackground.Height);
+            GL.Vertex2(0, ProjectionHeight);
+
+            GL.End();
+            GL.Disable(EnableCap.Texture2D);
         }
 
         private void RenderSolid(float X, float Y, int Color) {
