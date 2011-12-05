@@ -162,8 +162,20 @@ namespace ImpressiveSolids {
                 }
 
                 if (Stabilized) {
-                    GenerateNextStick();
-                    GameState = GameStateEnum.Fall;
+                    var GameOver = false;
+                    for (var X = 0; X < MapWidth; X++) {
+                        if (Map[X, 0] >= 0) {
+                            GameOver = true;
+                            break;
+                        }
+                    }
+
+                    if (GameOver) {
+                        GameState = GameStateEnum.GameOver;
+                    } else {
+                        GenerateNextStick();
+                        GameState = GameStateEnum.Fall;
+                    }
                 }
             }
         }
@@ -189,16 +201,22 @@ namespace ImpressiveSolids {
         }
 
         protected void OnKeyDown(object Sender, KeyboardKeyEventArgs E) {
-            if ((Key.Left == E.Key) && (StickPosition.X > 0)) {
-                --StickPosition.X;
-            } else if ((Key.Right == E.Key) && (StickPosition.X + StickLength < MapWidth)) {
-                ++StickPosition.X;
-            } else if (Key.Up == E.Key) {
-                var T = StickColors[0];
-                for (var i = 0; i < StickLength - 1; i++) {
-                    StickColors[i] = StickColors[i + 1];
+            if (GameStateEnum.Fall == GameState) {
+                if ((Key.Left == E.Key) && (StickPosition.X > 0)) {
+                    --StickPosition.X;
+                } else if ((Key.Right == E.Key) && (StickPosition.X + StickLength < MapWidth)) {
+                    ++StickPosition.X;
+                } else if (Key.Up == E.Key) {
+                    var T = StickColors[0];
+                    for (var i = 0; i < StickLength - 1; i++) {
+                        StickColors[i] = StickColors[i + 1];
+                    }
+                    StickColors[StickLength - 1] = T;
                 }
-                StickColors[StickLength - 1] = T;
+            } else if (GameStateEnum.GameOver == GameState) {
+                if ((Key.Enter == E.Key) || (Key.KeypadEnter == E.Key)) {
+                    New();
+                }
             }
         }
 
