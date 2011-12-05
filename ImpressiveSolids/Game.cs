@@ -38,7 +38,7 @@ namespace ImpressiveSolids {
         private const float FallSpeed = 0.2f;
 
         private const int ColorsCount = 5;
-        private Color4[] Colors = { Color4.PaleVioletRed, Color4.LightSeaGreen, Color4.CornflowerBlue, Color4.RosyBrown, Color4.LightGoldenrodYellow };
+        private Texture[] ColorTextures = new Texture[ColorsCount];
 
         private enum GameStateEnum {
             Fall,
@@ -57,6 +57,9 @@ namespace ImpressiveSolids {
             VSync = VSyncMode.On;
             Keyboard.KeyDown += new EventHandler<KeyboardKeyEventArgs>(OnKeyDown);
             TextureBackground = new Texture(new Bitmap("textures/background.png"));
+            for (var i = 0; i < ColorsCount; i++) {
+                ColorTextures[i] = new Texture(new Bitmap("textures/solids/" + i + ".png"));
+            }
         }
 
         protected override void OnLoad(EventArgs E) {
@@ -239,9 +242,13 @@ namespace ImpressiveSolids {
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref Modelview);
 
-            RenderBackground();
+            GL.Enable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Blend);
 
-            GL.Begin(BeginMode.Quads);
+            GL.Color4(Color4.White);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+            RenderBackground();
 
             for (var X = 0; X < MapWidth; X++) {
                 for (var Y = 0; Y < MapHeight; Y++) {
@@ -257,15 +264,11 @@ namespace ImpressiveSolids {
                 }
             }
 
-            GL.End();
-
             SwapBuffers();
         }
 
         private void RenderBackground() {
-            GL.Enable(EnableCap.Texture2D);
             TextureBackground.Bind();
-            GL.Color4(Color4.Transparent);
             GL.Begin(BeginMode.Quads);
 
             GL.TexCoord2(0, 0);
@@ -281,15 +284,25 @@ namespace ImpressiveSolids {
             GL.Vertex2(0, ProjectionHeight);
 
             GL.End();
-            GL.Disable(EnableCap.Texture2D);
         }
 
         private void RenderSolid(float X, float Y, int Color) {
-            GL.Color4(Colors[Color]);
+            ColorTextures[Color].Bind();
+            GL.Begin(BeginMode.Quads);
+
+            GL.TexCoord2(0, 0);
             GL.Vertex2(X * SolidSize, Y * SolidSize);
+
+            GL.TexCoord2(1, 0);
             GL.Vertex2((X + 1) * SolidSize, Y * SolidSize);
+
+            GL.TexCoord2(1, 1);
             GL.Vertex2((X + 1) * SolidSize, (Y + 1) * SolidSize);
+
+            GL.TexCoord2(0, 1);
             GL.Vertex2(X * SolidSize, (Y + 1) * SolidSize);
+
+            GL.End();
         }
     }
 }
