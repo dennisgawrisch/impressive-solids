@@ -58,7 +58,7 @@ namespace ImpressiveSolids {
         private int Score;
         private int TotalDestroyedThisMove;
 
-        private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer;
+        private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer, GameOverLabel, GameOverHint;
 
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
@@ -81,6 +81,14 @@ namespace ImpressiveSolids {
             var ScoreColor = Color4.Tomato;
             ScoreRenderer = new TextRenderer(ScoreFont, ScoreColor);
             HighScoreRenderer = new TextRenderer(ScoreFont, ScoreColor);
+
+            var GameStateFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 30, GraphicsUnit.Pixel);
+            var GameStateColor = Color4.Tomato;
+            GameOverLabel = new TextRenderer(GameStateFont, GameStateColor, "Game over");
+
+            var GameStateHintFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 25, GraphicsUnit.Pixel);
+            var GameStateHintColor = Color4.IndianRed;
+            GameOverHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Press Enter");
         }
 
         protected override void OnLoad(EventArgs E) {
@@ -309,7 +317,12 @@ namespace ImpressiveSolids {
             GL.Translate(0, -NextStickLabel.Height, 0);
 
             GL.Translate(0, MapHeight * SolidSize / 4f, 0);
-            // TODO render Pause / New game button
+            if (GameStateEnum.GameOver == GameState) {
+                GameOverLabel.Render();
+                GL.Translate(0, GameOverLabel.Height, 0);
+                GameOverHint.Render();
+                GL.Translate(0, -GameOverLabel.Height, 0);
+            }
 
             GL.Translate(0, MapHeight * SolidSize / 4f, 0);
             ScoreLabel.Render();
