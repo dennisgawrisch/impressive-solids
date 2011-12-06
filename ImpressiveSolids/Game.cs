@@ -114,7 +114,7 @@ namespace ImpressiveSolids {
             PlayingGameLabel = new TextRenderer(GameStateFont, GameStateColor, "Playing");
 
             var GameStateHintFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 25, GraphicsUnit.Pixel);
-            var GameStateHintColor = Color4.IndianRed;
+            var GameStateHintColor = Color4.SteelBlue;
             GameOverHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Press Enter");
             UnpauseHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Press Space");
             PauseHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Space pauses");
