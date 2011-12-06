@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
@@ -57,15 +58,37 @@ namespace ImpressiveSolids {
 
         private int Score;
         private int TotalDestroyedThisMove;
+        private int HighScore;
+        private string HighScoreFilename;
 
         private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer;
 
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
             VSync = VSyncMode.On;
-            
+
+            var ConfigDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + Path.DirectorySeparatorChar + "ImpressiveSolids";
+            if (!Directory.Exists(ConfigDirectory)) {
+                Directory.CreateDirectory(ConfigDirectory);
+            }
+
+            HighScoreFilename = ConfigDirectory + Path.DirectorySeparatorChar + "HighScore.xml";
+            if (File.Exists(HighScoreFilename)) {
+                using (var Stream = new FileStream(HighScoreFilename, FileMode.Open)) {
+                    using (var Reader = new BinaryReader(Stream)) {
+                        try {
+                            HighScore = Reader.ReadInt32();
+                        } catch (IOException) {
+                            HighScore = 0;
+                        }
+                    }
+                }
+            } else {
+                HighScore = 0;
+            }
+
             Keyboard.KeyDown += new EventHandler<KeyboardKeyEventArgs>(OnKeyDown);
-            
+
             TextureBackground = new Texture(new Bitmap("textures/background.png"));
             for (var i = 0; i < ColorsCount; i++) {
                 ColorTextures[i] = new Texture(new Bitmap("textures/solids/" + i + ".png"));
@@ -210,6 +233,14 @@ namespace ImpressiveSolids {
 
                     if (GameOver) {
                         GameState = GameStateEnum.GameOver;
+                        if (Score > HighScore) {
+                            HighScore = Score;
+                            using (var Stream = new FileStream(HighScoreFilename, FileMode.Create)) {
+                                using (var Writer = new BinaryWriter(Stream)) {
+                                    Writer.Write(HighScore);
+                                }
+                            }
+                        }
                     } else {
                         GenerateNextStick();
                         TotalDestroyedThisMove = 0;
@@ -285,7 +316,7 @@ namespace ImpressiveSolids {
             GL.Translate(PipeMargin, PipeMargin, 0);
 
             RenderPipe();
-            
+
             for (var X = 0; X < MapWidth; X++) {
                 for (var Y = 0; Y < MapHeight; Y++) {
                     if (Map[X, Y] >= 0) {
@@ -321,7 +352,7 @@ namespace ImpressiveSolids {
             GL.Translate(0, MapHeight * SolidSize / 4f, 0);
             HighScoreLabel.Render();
             GL.Translate(0, HighScoreLabel.Height, 0);
-            HighScoreRenderer.Label = "100500"; // TODO
+            HighScoreRenderer.Label = HighScore.ToString();
             HighScoreRenderer.Render();
             GL.Translate(0, -HighScoreLabel.Height, 0);
 
