@@ -15,7 +15,7 @@ namespace ImpressiveSolids {
             }
         }
 
-        private const int NominalWidth = 700;
+        private const int NominalWidth = 500;
         private const int NominalHeight = 500;
 
         private float ProjectionWidth;
@@ -245,11 +245,15 @@ namespace ImpressiveSolids {
             GL.Enable(EnableCap.Texture2D);
             GL.Enable(EnableCap.Blend);
 
-            GL.Color4(Color4.White);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             RenderBackground();
 
+            var PipeMargin = (ProjectionHeight - MapHeight * SolidSize) / 2f;
+            GL.Translate(PipeMargin, PipeMargin, 0);
+
+            RenderPipe();
+            
             for (var X = 0; X < MapWidth; X++) {
                 for (var Y = 0; Y < MapHeight; Y++) {
                     if (Map[X, Y] >= 0) {
@@ -286,8 +290,23 @@ namespace ImpressiveSolids {
             GL.End();
         }
 
+        private void RenderPipe() {
+            GL.Disable(EnableCap.Texture2D);
+            GL.Color4(Color4.Black);
+
+            GL.Begin(BeginMode.Quads);
+            GL.Vertex2(0, 0);
+            GL.Vertex2(MapWidth * SolidSize, 0);
+            GL.Vertex2(MapWidth * SolidSize, MapHeight * SolidSize);
+            GL.Vertex2(0, MapHeight * SolidSize);
+            GL.End();
+
+            GL.Enable(EnableCap.Texture2D);
+        }
+
         private void RenderSolid(float X, float Y, int Color) {
             ColorTextures[Color].Bind();
+            GL.Color4(Color4.White);
             GL.Begin(BeginMode.Quads);
 
             GL.TexCoord2(0, 0);
