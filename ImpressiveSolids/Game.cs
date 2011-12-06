@@ -50,6 +50,7 @@ namespace ImpressiveSolids {
             GameOver
         }
         private GameStateEnum GameState;
+        private bool Paused;
 
         private const int DestroyableLength = 3;
         private Stack<Vector2> Destroyables = new Stack<Vector2>();
@@ -62,6 +63,7 @@ namespace ImpressiveSolids {
         private string HighScoreFilename;
 
         private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer, GameOverLabel, GameOverHint;
+        private TextRenderer PauseLabel, UnpauseHint, PlayingGameLabel, PauseHint;
 
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
@@ -108,15 +110,20 @@ namespace ImpressiveSolids {
             var GameStateFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 30, GraphicsUnit.Pixel);
             var GameStateColor = Color4.Tomato;
             GameOverLabel = new TextRenderer(GameStateFont, GameStateColor, "Game over");
+            PauseLabel = new TextRenderer(GameStateFont, GameStateColor, "Pause");
+            PlayingGameLabel = new TextRenderer(GameStateFont, GameStateColor, "Playing");
 
             var GameStateHintFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 25, GraphicsUnit.Pixel);
             var GameStateHintColor = Color4.IndianRed;
             GameOverHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Press Enter");
+            UnpauseHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Press Space");
+            PauseHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Space pauses");
         }
 
         protected override void OnLoad(EventArgs E) {
             base.OnLoad(E);
             New();
+            Paused = true;
         }
 
         private void New() {
@@ -171,6 +178,10 @@ namespace ImpressiveSolids {
 
         protected override void OnUpdateFrame(FrameEventArgs E) {
             base.OnUpdateFrame(E);
+
+            if (Paused) {
+                return;
+            }
 
             var CurrentFallSpeed = Keyboard[Key.Down] ? FastFallSpeed : FallSpeed;
 
@@ -286,7 +297,7 @@ namespace ImpressiveSolids {
         }
 
         protected void OnKeyDown(object Sender, KeyboardKeyEventArgs E) {
-            if (GameStateEnum.Fall == GameState) {
+            if ((GameStateEnum.Fall == GameState) && !Paused) {
                 if ((Key.Left == E.Key) && (StickPosition.X > 0)) {
                     --StickPosition.X;
                 } else if ((Key.Right == E.Key) && (StickPosition.X + StickLength < MapWidth)) {
@@ -302,6 +313,10 @@ namespace ImpressiveSolids {
                 if ((Key.Enter == E.Key) || (Key.KeypadEnter == E.Key)) {
                     New();
                 }
+            }
+
+            if (((GameStateEnum.Fall == GameState) || (GameStateEnum.Impact == GameState)) && (Key.Space == E.Key)) {
+                Paused = !Paused;
             }
         }
 
@@ -367,6 +382,16 @@ namespace ImpressiveSolids {
                 GL.Translate(0, GameOverLabel.Height, 0);
                 GameOverHint.Render();
                 GL.Translate(0, -GameOverLabel.Height, 0);
+            } else if (Paused) {
+                PauseLabel.Render();
+                GL.Translate(0, PauseLabel.Height, 0);
+                UnpauseHint.Render();
+                GL.Translate(0, -PauseLabel.Height, 0);
+            } else {
+                PlayingGameLabel.Render();
+                GL.Translate(0, PlayingGameLabel.Height, 0);
+                PauseHint.Render();
+                GL.Translate(0, -PlayingGameLabel.Height, 0);
             }
 
             GL.Translate(0, MapHeight * SolidSize / 4f, 0);
