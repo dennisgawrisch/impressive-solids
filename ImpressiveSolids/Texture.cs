@@ -1,9 +1,10 @@
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using OpenTK.Graphics.OpenGL;
 
 namespace ImpressiveSolids {
-    public class Texture {
+    public class Texture : IDisposable {
         public int GlHandle { get; protected set; }
         public int Width { get; protected set; }
         public int Height { get; protected set; }
@@ -26,5 +27,29 @@ namespace ImpressiveSolids {
         public void Bind() {
             GL.BindTexture(TextureTarget.Texture2D, GlHandle);
         }
+
+        #region Disposable
+
+        private bool Disposed = false;
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool Disposing) {
+            if (!Disposed) {
+                if (Disposing) {
+                    GL.DeleteTexture(GlHandle);
+                }
+                Disposed = true;
+            }
+        }
+
+        ~Texture() {
+            Dispose(false);
+        }
+
+        #endregion
     }
 }

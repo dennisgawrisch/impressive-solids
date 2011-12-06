@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game.cs" />
+    <Compile Include="TextRenderer.cs" />
     <Compile Include="Texture.cs" />
   </ItemGroup>
   <ItemGroup>
