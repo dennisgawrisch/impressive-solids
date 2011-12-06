@@ -61,7 +61,7 @@ namespace ImpressiveSolids {
         private int HighScore;
         private string HighScoreFilename;
 
-        private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer;
+        private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer, GameOverLabel, GameOverHint;
 
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
@@ -104,6 +104,14 @@ namespace ImpressiveSolids {
             var ScoreColor = Color4.Tomato;
             ScoreRenderer = new TextRenderer(ScoreFont, ScoreColor);
             HighScoreRenderer = new TextRenderer(ScoreFont, ScoreColor);
+
+            var GameStateFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 30, GraphicsUnit.Pixel);
+            var GameStateColor = Color4.Tomato;
+            GameOverLabel = new TextRenderer(GameStateFont, GameStateColor, "Game over");
+
+            var GameStateHintFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 25, GraphicsUnit.Pixel);
+            var GameStateHintColor = Color4.IndianRed;
+            GameOverHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Press Enter");
         }
 
         protected override void OnLoad(EventArgs E) {
@@ -151,6 +159,13 @@ namespace ImpressiveSolids {
             if (ProjectionHeight < NominalHeight) {
                 ProjectionHeight = NominalHeight;
                 ProjectionWidth = (float)ClientRectangle.Width / (float)ClientRectangle.Height * ProjectionHeight;
+            }
+
+            if (ClientSize.Width < NominalWidth) {
+                ClientSize = new Size(NominalWidth, ClientSize.Height);
+            }
+            if (ClientSize.Height < NominalHeight) {
+                ClientSize = new Size(ClientSize.Width, NominalHeight);
             }
         }
 
@@ -312,8 +327,15 @@ namespace ImpressiveSolids {
 
             RenderBackground();
 
-            var PipeMargin = (ProjectionHeight - MapHeight * SolidSize) / 2f;
-            GL.Translate(PipeMargin, PipeMargin, 0);
+            var PipeMarginY = (ProjectionHeight - MapHeight * SolidSize) / 2f;
+            var PipeMarginX = (NominalHeight - MapHeight * SolidSize) / 2f;
+
+            var Overwidth = ProjectionWidth - ProjectionHeight * (float)NominalWidth / NominalHeight;
+            if (Overwidth > 0) {
+                GL.Translate(Math.Min(Overwidth, (ProjectionWidth - MapWidth * SolidSize) / 2f), PipeMarginY, 0);
+            } else {
+                GL.Translate(PipeMarginX, PipeMarginY, 0);
+            }
 
             RenderPipe();
 
@@ -332,7 +354,7 @@ namespace ImpressiveSolids {
             }
 
             // HUD offset
-            GL.Translate(MapWidth * SolidSize + PipeMargin, 0, 0);
+            GL.Translate(MapWidth * SolidSize + PipeMarginX, 0, 0);
 
             NextStickLabel.Render();
             GL.Translate(0, NextStickLabel.Height, 0);
@@ -340,7 +362,12 @@ namespace ImpressiveSolids {
             GL.Translate(0, -NextStickLabel.Height, 0);
 
             GL.Translate(0, MapHeight * SolidSize / 4f, 0);
-            // TODO render Pause / New game button
+            if (GameStateEnum.GameOver == GameState) {
+                GameOverLabel.Render();
+                GL.Translate(0, GameOverLabel.Height, 0);
+                GameOverHint.Render();
+                GL.Translate(0, -GameOverLabel.Height, 0);
+            }
 
             GL.Translate(0, MapHeight * SolidSize / 4f, 0);
             ScoreLabel.Render();
