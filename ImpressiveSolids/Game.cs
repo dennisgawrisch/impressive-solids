@@ -36,7 +36,8 @@ namespace ImpressiveSolids {
         private Vector2 StickPosition;
         private int[] NextStickColors;
 
-        private const float FallSpeed = 0.2f;
+        private const float FallSpeed = 0.07f;
+        private const float FastFallSpeed = 0.5f;
 
         private const int ColorsCount = 5;
         private Texture[] ColorTextures = new Texture[ColorsCount];
@@ -111,8 +112,10 @@ namespace ImpressiveSolids {
         protected override void OnUpdateFrame(FrameEventArgs E) {
             base.OnUpdateFrame(E);
 
+            var CurrentFallSpeed = Keyboard[Key.Down] ? FastFallSpeed : FallSpeed;
+
             if (GameStateEnum.Fall == GameState) {
-                StickPosition.Y += FallSpeed;
+                StickPosition.Y += CurrentFallSpeed;
 
                 var FellOnFloor = (StickPosition.Y >= MapHeight - 1);
 
@@ -142,7 +145,7 @@ namespace ImpressiveSolids {
                     for (var Y = MapHeight - 2; Y >= 0; Y--) {
                         if ((Map[X, Y] >= 0) && ((Map[X, Y + 1] < 0) || (ImpactFallOffset[X, Y + 1] > 0))) {
                             Stabilized = false;
-                            ImpactFallOffset[X, Y] += FallSpeed;
+                            ImpactFallOffset[X, Y] += CurrentFallSpeed;
                             if (ImpactFallOffset[X, Y] >= 1) {
                                 Map[X, Y + 1] = Map[X, Y];
                                 Map[X, Y] = -1;
