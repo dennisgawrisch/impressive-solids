@@ -146,9 +146,19 @@ namespace ImpressiveSolids {
         }
 
         protected void OnKeyDown(object Sender, KeyboardKeyEventArgs E) {
-            if ((Key.Left == E.Key) && (StickPosition.X > 0)) {
+            if (
+				(Key.Left == E.Key)
+				&& (StickPosition.X > 0)
+				&& (Map[(int)StickPosition.X - 1, (int)Math.Floor(StickPosition.Y)] < 0)
+				&& (Map[(int)StickPosition.X - 1, (int)Math.Ceiling(StickPosition.Y)] < 0)
+			) {
                 --StickPosition.X;
-            } else if ((Key.Right == E.Key) && (StickPosition.X + StickLength < MapWidth)) {
+            } else if (
+				(Key.Right == E.Key)
+				&& (StickPosition.X + StickLength < MapWidth)
+				&& (Map[(int)StickPosition.X + StickLength, (int)Math.Floor(StickPosition.Y)] < 0)
+				&& (Map[(int)StickPosition.X + StickLength, (int)Math.Ceiling(StickPosition.Y)] < 0)
+			) {
                 ++StickPosition.X;
             } else if (Key.Up == E.Key) {
                 var T = StickColors[0];
