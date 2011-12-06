@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Text;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -54,14 +55,31 @@ namespace ImpressiveSolids {
 
         private Texture TextureBackground;
 
+        private int Score;
+
+        private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer;
+
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
             VSync = VSyncMode.On;
+            
             Keyboard.KeyDown += new EventHandler<KeyboardKeyEventArgs>(OnKeyDown);
+            
             TextureBackground = new Texture(new Bitmap("textures/background.png"));
             for (var i = 0; i < ColorsCount; i++) {
                 ColorTextures[i] = new Texture(new Bitmap("textures/solids/" + i + ".png"));
             }
+
+            var LabelFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 20, GraphicsUnit.Pixel);
+            var LabelColor = Color4.SteelBlue;
+            NextStickLabel = new TextRenderer(LabelFont, LabelColor, "Next");
+            ScoreLabel = new TextRenderer(LabelFont, LabelColor, "Score");
+            HighScoreLabel = new TextRenderer(LabelFont, LabelColor, "High score");
+
+            var ScoreFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 50, GraphicsUnit.Pixel);
+            var ScoreColor = Color4.Tomato;
+            ScoreRenderer = new TextRenderer(ScoreFont, ScoreColor);
+            HighScoreRenderer = new TextRenderer(ScoreFont, ScoreColor);
         }
 
         protected override void OnLoad(EventArgs E) {
@@ -86,6 +104,8 @@ namespace ImpressiveSolids {
             GenerateNextStick();
             GenerateNextStick(); // because 1st call makes current stick all zeros
             GameState = GameStateEnum.Fall;
+
+            Score = 0;
         }
 
         private void GenerateNextStick() {
@@ -277,7 +297,28 @@ namespace ImpressiveSolids {
 
             // HUD offset
             GL.Translate(MapWidth * SolidSize + PipeMargin, 0, 0);
+
+            NextStickLabel.Render();
+            GL.Translate(0, NextStickLabel.Height, 0);
             RenderNextStick();
+            GL.Translate(0, -NextStickLabel.Height, 0);
+
+            GL.Translate(0, MapHeight * SolidSize / 4f, 0);
+            // TODO render Pause / New game button
+
+            GL.Translate(0, MapHeight * SolidSize / 4f, 0);
+            ScoreLabel.Render();
+            GL.Translate(0, ScoreLabel.Height, 0);
+            ScoreRenderer.Label = Score.ToString();
+            ScoreRenderer.Render();
+            GL.Translate(0, -ScoreLabel.Height, 0);
+
+            GL.Translate(0, MapHeight * SolidSize / 4f, 0);
+            HighScoreLabel.Render();
+            GL.Translate(0, HighScoreLabel.Height, 0);
+            HighScoreRenderer.Label = "100500"; // TODO
+            HighScoreRenderer.Render();
+            GL.Translate(0, -HighScoreLabel.Height, 0);
 
             SwapBuffers();
         }
