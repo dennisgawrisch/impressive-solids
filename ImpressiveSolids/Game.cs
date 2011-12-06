@@ -63,7 +63,7 @@ namespace ImpressiveSolids {
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
             VSync = VSyncMode.On;
-            
+
             Keyboard.KeyDown += new EventHandler<KeyboardKeyEventArgs>(OnKeyDown);
             
             TextureBackground = new Texture(new Bitmap("textures/background.png"));
@@ -136,6 +136,13 @@ namespace ImpressiveSolids {
             if (ProjectionHeight < NominalHeight) {
                 ProjectionHeight = NominalHeight;
                 ProjectionWidth = (float)ClientRectangle.Width / (float)ClientRectangle.Height * ProjectionHeight;
+            }
+
+            if (ClientSize.Width < NominalWidth) {
+                ClientSize = new Size(NominalWidth, ClientSize.Height);
+            }
+            if (ClientSize.Height < NominalHeight) {
+                ClientSize = new Size(ClientSize.Width, NominalHeight);
             }
         }
 
@@ -289,8 +296,9 @@ namespace ImpressiveSolids {
 
             RenderBackground();
 
-            var PipeMargin = (ProjectionHeight - MapHeight * SolidSize) / 2f;
-            GL.Translate(PipeMargin, PipeMargin, 0);
+            var PipeMarginY = (ProjectionHeight - MapHeight * SolidSize) / 2f;
+            var PipeMarginX = (NominalHeight - MapHeight * SolidSize) / 2f;
+            GL.Translate(PipeMarginX, PipeMarginY, 0);
 
             RenderPipe();
             
@@ -309,7 +317,7 @@ namespace ImpressiveSolids {
             }
 
             // HUD offset
-            GL.Translate(MapWidth * SolidSize + PipeMargin, 0, 0);
+            GL.Translate(MapWidth * SolidSize + PipeMarginX, 0, 0);
 
             NextStickLabel.Render();
             GL.Translate(0, NextStickLabel.Height, 0);
