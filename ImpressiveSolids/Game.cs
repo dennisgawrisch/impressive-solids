@@ -74,7 +74,7 @@ namespace ImpressiveSolids {
                 Directory.CreateDirectory(ConfigDirectory);
             }
 
-            HighScoreFilename = ConfigDirectory + Path.DirectorySeparatorChar + "HighScore.xml";
+            HighScoreFilename = ConfigDirectory + Path.DirectorySeparatorChar + "HighScore.dat";
             if (File.Exists(HighScoreFilename)) {
                 using (var Stream = new FileStream(HighScoreFilename, FileMode.Open)) {
                     using (var Reader = new BinaryReader(Stream)) {
