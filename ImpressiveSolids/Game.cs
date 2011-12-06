@@ -56,6 +56,7 @@ namespace ImpressiveSolids {
         private Texture TextureBackground;
 
         private int Score;
+        private int TotalDestroyedThisMove;
 
         private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer;
 
@@ -106,6 +107,7 @@ namespace ImpressiveSolids {
             GameState = GameStateEnum.Fall;
 
             Score = 0;
+            TotalDestroyedThisMove = 0;
         }
 
         private void GenerateNextStick() {
@@ -191,6 +193,8 @@ namespace ImpressiveSolids {
                         foreach (var Coords in Destroyables) {
                             Map[(int)Coords.X, (int)Coords.Y] = -1;
                         }
+                        Score += (int)Math.Ceiling(Destroyables.Count + Math.Pow(1.5, Destroyables.Count - 3) - 1) + TotalDestroyedThisMove;
+                        TotalDestroyedThisMove += Destroyables.Count;
                         Stabilized = false;
                     }
                 }
@@ -208,6 +212,7 @@ namespace ImpressiveSolids {
                         GameState = GameStateEnum.GameOver;
                     } else {
                         GenerateNextStick();
+                        TotalDestroyedThisMove = 0;
                         GameState = GameStateEnum.Fall;
                     }
                 }
