@@ -298,7 +298,13 @@ namespace ImpressiveSolids {
 
             var PipeMarginY = (ProjectionHeight - MapHeight * SolidSize) / 2f;
             var PipeMarginX = (NominalHeight - MapHeight * SolidSize) / 2f;
-            GL.Translate(PipeMarginX, PipeMarginY, 0);
+
+            var Overwidth = ProjectionWidth - ProjectionHeight * (float)NominalWidth / NominalHeight;
+            if (Overwidth > 0) {
+                GL.Translate(Math.Min(Overwidth, (ProjectionWidth - MapWidth * SolidSize) / 2f), PipeMarginY, 0);
+            } else {
+                GL.Translate(PipeMarginX, PipeMarginY, 0);
+            }
 
             RenderPipe();
             
