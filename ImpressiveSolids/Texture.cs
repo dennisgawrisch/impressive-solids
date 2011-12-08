@@ -6,18 +6,42 @@ using OpenTK.Graphics.OpenGL;
 namespace ImpressiveSolids {
     public class Texture : IDisposable {
         public int GlHandle { get; protected set; }
+
         public int Width { get; protected set; }
         public int Height { get; protected set; }
+
+        #region NPOT
+
+        private static bool? CalculatedSupportForNpot;
+        public static bool NpotIsSupported {
+            get {
+                if (!CalculatedSupportForNpot.HasValue) {
+                    CalculatedSupportForNpot = false;
+                    int ExtensionsCount;
+                    GL.GetInteger(GetPName.NumExtensions, out ExtensionsCount);
+                    for (var i = 0; i < ExtensionsCount; i++) {
+                        if ("GL_ARB_texture_non_power_of_two" == GL.GetString(StringName.Extensions, i)) {
+                            CalculatedSupportForNpot = true;
+                            break;
+                        }
+                    }
+                }
+                return CalculatedSupportForNpot.Value;
+            }
+        }
+
         public int PotWidth {
             get {
-                return (int)Math.Pow(2, Math.Ceiling(Math.Log(Width, 2)));
+                return NpotIsSupported ? Width : (int)Math.Pow(2, Math.Ceiling(Math.Log(Width, 2)));
             }
         }
         public int PotHeight {
             get {
-                return (int)Math.Pow(2, Math.Ceiling(Math.Log(Height, 2)));
+                return NpotIsSupported ? Height : (int)Math.Pow(2, Math.Ceiling(Math.Log(Height, 2)));
             }
         }
+
+        #endregion
 
         public Texture(Bitmap Bitmap) {
             GlHandle = GL.GenTexture();
