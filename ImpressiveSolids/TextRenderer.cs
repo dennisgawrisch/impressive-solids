@@ -120,11 +120,21 @@ namespace ImpressiveSolids {
             Texture.Bind();
 
             GL.Color4(Color);
+            
             GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex2(0, 0);
-            GL.TexCoord2(1, 0); GL.Vertex2(Width, 0);
-            GL.TexCoord2(1, 1); GL.Vertex2(Width, Height);
-            GL.TexCoord2(0, 1); GL.Vertex2(0, Height);
+            
+            GL.TexCoord2(0, 0);
+            GL.Vertex2(0, 0);
+            
+            GL.TexCoord2((float)Texture.Width / Texture.PotWidth, 0);
+            GL.Vertex2(Width, 0);
+
+            GL.TexCoord2((float)Texture.Width / Texture.PotWidth, (float)Texture.Height / Texture.PotHeight);
+            GL.Vertex2(Width, Height);
+
+            GL.TexCoord2(0, (float)Texture.Height / Texture.PotHeight);
+            GL.Vertex2(0, Height);
+            
             GL.End();
 
             GL.PopAttrib();

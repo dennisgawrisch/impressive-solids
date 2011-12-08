@@ -8,16 +8,27 @@ namespace ImpressiveSolids {
         public int GlHandle { get; protected set; }
         public int Width { get; protected set; }
         public int Height { get; protected set; }
+        public int PotWidth {
+            get {
+                return (int)Math.Pow(2, Math.Ceiling(Math.Log(Width, 2)));
+            }
+        }
+        public int PotHeight {
+            get {
+                return (int)Math.Pow(2, Math.Ceiling(Math.Log(Height, 2)));
+            }
+        }
 
         public Texture(Bitmap Bitmap) {
             GlHandle = GL.GenTexture();
             Bind();
 
             Width = Bitmap.Width;
-            Height = Bitmap.Width;
+            Height = Bitmap.Height;
 
             var BitmapData = Bitmap.LockBits(new Rectangle(0, 0, Bitmap.Width, Bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, BitmapData.Width, BitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, BitmapData.Scan0);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, PotWidth, PotHeight, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, BitmapData.Width, BitmapData.Height, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, BitmapData.Scan0);
             Bitmap.UnlockBits(BitmapData);
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
