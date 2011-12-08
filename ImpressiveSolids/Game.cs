@@ -421,6 +421,7 @@ namespace ImpressiveSolids {
 
         private void RenderBackground() {
             TextureBackground.Bind();
+            GL.Color4(Color4.White);
             GL.Begin(BeginMode.Quads);
 
             GL.TexCoord2(0, 0);
