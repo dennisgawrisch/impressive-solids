@@ -203,24 +203,26 @@ namespace ImpressiveSolids {
 
                 var FellOnFloor = (StickPosition.Y >= MapHeight - 1);
 
-                var FellOnBlock = false;
-                if (!FellOnFloor) {
-                    var Y = (int)Math.Floor(StickPosition.Y + 1);
-                    for (var i = 0; i < StickLength; i++) {
+                for (var i = 0; i < StickLength; i++) {
+                    if (StickColors[i] >= 0) {
                         var X = (int)StickPosition.X + i;
-                        if (Map[X, Y] >= 0) {
-                            FellOnBlock = true;
-                            break;
+                        var Y = (int)Math.Floor(StickPosition.Y);
+                        if (FellOnFloor || (Map[X, Y + 1] >= 0)) {
+                            Map[X, Y] = StickColors[i];
+                            StickColors[i] = -1;
                         }
                     }
                 }
 
-                if (FellOnFloor || FellOnBlock) {
-                    var Y = (int)Math.Floor(StickPosition.Y);
-                    for (var i = 0; i < StickLength; i++) {
-                        var X = (int)StickPosition.X + i;
-                        Map[X, Y] = StickColors[i];
+                var WholeStickFell = true;
+                for (var i = 0; i < StickLength; i++) {
+                    if (StickColors[i] >= 0) {
+                        WholeStickFell = false;
+                        break;
                     }
+                }
+
+                if (WholeStickFell) {
                     GameState = GameStateEnum.Impact;
                 }
             } else if (GameStateEnum.Impact == GameState) {
@@ -312,26 +314,40 @@ namespace ImpressiveSolids {
 
         protected void OnKeyDown(object Sender, KeyboardKeyEventArgs E) {
             if ((GameStateEnum.Fall == GameState) && !Paused) {
-                if (
-                    (Key.Left == E.Key)
-                    && (StickPosition.X > 0)
-                    && (Map[(int)StickPosition.X - 1, (int)Math.Floor(StickPosition.Y)] < 0)
-                    && (Map[(int)StickPosition.X - 1, (int)Math.Ceiling(StickPosition.Y)] < 0)
-                ) {
-                    --StickPosition.X;
-                } else if (
-                    (Key.Right == E.Key)
-                    && (StickPosition.X + StickLength < MapWidth)
-                    && (Map[(int)StickPosition.X + StickLength, (int)Math.Floor(StickPosition.Y)] < 0)
-                    && (Map[(int)StickPosition.X + StickLength, (int)Math.Ceiling(StickPosition.Y)] < 0)
-                ) {
-                    ++StickPosition.X;
-                } else if (Key.Up == E.Key) {
-                    var T = StickColors[0];
-                    for (var i = 0; i < StickLength - 1; i++) {
-                        StickColors[i] = StickColors[i + 1];
+                if ((Key.Left == E.Key) || (Key.Right == E.Key)) {
+                    var Delta = (Key.Left == E.Key) ? -1 : +1;
+
+                    var Y1 = (int)Math.Floor(StickPosition.Y);
+                    var Y2 = (int)Math.Ceiling(StickPosition.Y);
+
+                    var CanMove = true;
+                    for (var i = 0; i < StickLength; i++) {
+                        if (StickColors[i] >= 0) {
+                            var X = (int)StickPosition.X + i + Delta;
+
+                            if ((X < 0) || (X >= MapWidth) || (Map[X, Y1] >= 0) || (Map[X, Y2] >= 0)) {
+                                CanMove = false;
+                                break;
+                            }
+                        }
                     }
-                    StickColors[StickLength - 1] = T;
+
+                    if (CanMove) {
+                        StickPosition.X += Delta;
+                    }
+                } else if (Key.Up == E.Key) {
+                    for (var i = 0; i < StickLength; i++) {
+                        if (StickColors[i] >= 0) {
+                            for (var j = i + 1; j < StickLength; j++) {
+                                if (StickColors[j] >= 0) {
+                                    var T = StickColors[i];
+                                    StickColors[i] = StickColors[j];
+                                    StickColors[j] = T;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             } else if (GameStateEnum.GameOver == GameState) {
                 if ((Key.Enter == E.Key) || (Key.KeypadEnter == E.Key)) {
@@ -375,7 +391,9 @@ namespace ImpressiveSolids {
 
             if (GameStateEnum.Fall == GameState) {
                 for (var i = 0; i < StickLength; i++) {
-                    RenderSolid(StickPosition.X + i, StickPosition.Y, StickColors[i]);
+                    if (StickColors[i] >= 0) {
+                        RenderSolid(StickPosition.X + i, StickPosition.Y, StickColors[i]);
+                    }
                 }
             }
 
