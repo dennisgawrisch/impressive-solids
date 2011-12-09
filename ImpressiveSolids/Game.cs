@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
@@ -52,7 +53,9 @@ namespace ImpressiveSolids {
         private Stack<Vector2> Destroyables = new Stack<Vector2>();
 
         private int Score;
+        private int TotalDestroyedThisMove;
         private int HighScore;
+        private string HighScoreFilename;
 
         private Texture TextureBackground;
         private Texture[] ColorTextures = new Texture[ColorsCount];
@@ -62,6 +65,28 @@ namespace ImpressiveSolids {
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
             VSync = VSyncMode.On;
+
+            var ConfigDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + Path.DirectorySeparatorChar + "ImpressiveSolids";
+            if (!Directory.Exists(ConfigDirectory)) {
+                Directory.CreateDirectory(ConfigDirectory);
+            }
+
+            HighScoreFilename = ConfigDirectory + Path.DirectorySeparatorChar + "HighScore.dat";
+            if (File.Exists(HighScoreFilename)) {
+                using (var Stream = new FileStream(HighScoreFilename, FileMode.Open)) {
+                    using (var Reader = new BinaryReader(Stream)) {
+                        try {
+                            HighScore = Reader.ReadInt32();
+                        }
+                        catch (IOException) {
+                            HighScore = 0;
+                        }
+                    }
+                }
+            }
+            else {
+                HighScore = 0;
+            }
 
             Keyboard.KeyDown += new EventHandler<KeyboardKeyEventArgs>(OnKeyDown);
 
@@ -118,6 +143,9 @@ namespace ImpressiveSolids {
             GenerateNextStick();
             GenerateNextStick(); // because 1st call makes current stick all zeros
             GameState = GameStateEnum.Fall;
+
+            Score = 0;
+            TotalDestroyedThisMove = 0;
         }
 
         private void GenerateNextStick() {
@@ -208,6 +236,8 @@ namespace ImpressiveSolids {
                         foreach (var Coords in Destroyables) {
                             Map[(int)Coords.X, (int)Coords.Y] = -1;
                         }
+                        Score += (int)Math.Ceiling(Destroyables.Count + Math.Pow(1.5, Destroyables.Count - 3) - 1) + TotalDestroyedThisMove;
+                        TotalDestroyedThisMove += Destroyables.Count;
                         Stabilized = false;
                     }
                 }
@@ -223,8 +253,18 @@ namespace ImpressiveSolids {
 
                     if (GameOver) {
                         GameState = GameStateEnum.GameOver;
+
+                        if (Score > HighScore) {
+                            HighScore = Score;
+                            using (var Stream = new FileStream(HighScoreFilename, FileMode.Create)) {
+                                using (var Writer = new BinaryWriter(Stream)) {
+                                    Writer.Write(HighScore);
+                                }
+                            }
+                        }
                     } else {
                         GenerateNextStick();
+                        TotalDestroyedThisMove = 0;
                         GameState = GameStateEnum.Fall;
                     }
                 }
