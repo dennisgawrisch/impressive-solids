@@ -15,7 +15,7 @@ namespace ImpressiveSolids {
             }
         }
 
-        private const int NominalWidth = 700;
+        private const int NominalWidth = 500;
         private const int NominalHeight = 500;
 
         private float ProjectionWidth;
@@ -109,6 +109,13 @@ namespace ImpressiveSolids {
             if (ProjectionHeight < NominalHeight) {
                 ProjectionHeight = NominalHeight;
                 ProjectionWidth = (float)ClientRectangle.Width / (float)ClientRectangle.Height * ProjectionHeight;
+            }
+
+            if (ClientSize.Width < NominalWidth) {
+                ClientSize = new Size(NominalWidth, ClientSize.Height);
+            }
+            if (ClientSize.Height < NominalHeight) {
+                ClientSize = new Size(ClientSize.Width, NominalHeight);
             }
         }
 
@@ -249,6 +256,19 @@ namespace ImpressiveSolids {
 
             RenderBackground();
 
+            var PipeMarginY = (ProjectionHeight - MapHeight * SolidSize) / 2f;
+            var PipeMarginX = (NominalHeight - MapHeight * SolidSize) / 2f;
+
+            var Overwidth = ProjectionWidth - ProjectionHeight * (float)NominalWidth / NominalHeight;
+            if (Overwidth > 0) {
+                GL.Translate(Math.Min(Overwidth, (ProjectionWidth - MapWidth * SolidSize) / 2f), PipeMarginY, 0);
+            }
+            else {
+                GL.Translate(PipeMarginX, PipeMarginY, 0);
+            }
+
+            RenderPipe();
+
             for (var X = 0; X < MapWidth; X++) {
                 for (var Y = 0; Y < MapHeight; Y++) {
                     if (Map[X, Y] >= 0) {
@@ -284,6 +304,20 @@ namespace ImpressiveSolids {
             GL.Vertex2(0, ProjectionHeight);
 
             GL.End();
+        }
+
+        private void RenderPipe() {
+            GL.Disable(EnableCap.Texture2D);
+            GL.Color4(Color4.Black);
+
+            GL.Begin(BeginMode.Quads);
+            GL.Vertex2(0, 0);
+            GL.Vertex2(MapWidth * SolidSize, 0);
+            GL.Vertex2(MapWidth * SolidSize, MapHeight * SolidSize);
+            GL.Vertex2(0, MapHeight * SolidSize);
+            GL.End();
+
+            GL.Enable(EnableCap.Texture2D);
         }
 
         private void RenderSolid(float X, float Y, int Color) {
