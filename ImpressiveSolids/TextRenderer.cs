@@ -111,12 +111,6 @@ namespace ImpressiveSolids {
                 NeedToRenderTexture = false;
             }
 
-            GL.PushAttrib(AttribMask.AllAttribBits);
-
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-
-            GL.Enable(EnableCap.Texture2D);
             Texture.Bind();
 
             GL.Color4(Color);
@@ -136,8 +130,6 @@ namespace ImpressiveSolids {
             GL.Vertex2(0, Height);
             
             GL.End();
-
-            GL.PopAttrib();
         }
     }
 }
