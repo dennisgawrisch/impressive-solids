@@ -122,6 +122,8 @@ namespace ImpressiveSolids {
 
         protected override void OnLoad(EventArgs E) {
             base.OnLoad(E);
+			
+            Icon = new Icon("ImpressiveSolids.ico", 128, 128);
 
             GL.Enable(EnableCap.Texture2D);
             GL.Enable(EnableCap.Blend);
