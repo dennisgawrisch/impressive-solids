@@ -111,23 +111,25 @@ namespace ImpressiveSolids {
                 NeedToRenderTexture = false;
             }
 
-            GL.PushAttrib(AttribMask.AllAttribBits);
-
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-
-            GL.Enable(EnableCap.Texture2D);
             Texture.Bind();
 
             GL.Color4(Color);
+            
             GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex2(0, 0);
-            GL.TexCoord2(1, 0); GL.Vertex2(Width, 0);
-            GL.TexCoord2(1, 1); GL.Vertex2(Width, Height);
-            GL.TexCoord2(0, 1); GL.Vertex2(0, Height);
-            GL.End();
+            
+            GL.TexCoord2(0, 0);
+            GL.Vertex2(0, 0);
+            
+            GL.TexCoord2((float)Texture.Width / Texture.PotWidth, 0);
+            GL.Vertex2(Width, 0);
 
-            GL.PopAttrib();
+            GL.TexCoord2((float)Texture.Width / Texture.PotWidth, (float)Texture.Height / Texture.PotHeight);
+            GL.Vertex2(Width, Height);
+
+            GL.TexCoord2(0, (float)Texture.Height / Texture.PotHeight);
+            GL.Vertex2(0, Height);
+            
+            GL.End();
         }
     }
 }
