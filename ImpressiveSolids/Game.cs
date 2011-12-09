@@ -42,7 +42,6 @@ namespace ImpressiveSolids {
         private const float FastFallSpeed = 0.5f;
 
         private const int ColorsCount = 5;
-        private Texture[] ColorTextures = new Texture[ColorsCount];
 
         private enum GameStateEnum {
             Fall,
@@ -55,12 +54,13 @@ namespace ImpressiveSolids {
         private const int DestroyableLength = 3;
         private Stack<Vector2> Destroyables = new Stack<Vector2>();
 
-        private Texture TextureBackground;
-
         private int Score;
         private int TotalDestroyedThisMove;
         private int HighScore;
         private string HighScoreFilename;
+
+        private Texture TextureBackground;
+        private Texture[] ColorTextures = new Texture[ColorsCount];
 
         private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer, GameOverLabel, GameOverHint;
         private TextRenderer PauseLabel, UnpauseHint, PlayingGameLabel, PauseHint;
@@ -270,6 +270,7 @@ namespace ImpressiveSolids {
 
                     if (GameOver) {
                         GameState = GameStateEnum.GameOver;
+
                         if (Score > HighScore) {
                             HighScore = Score;
                             using (var Stream = new FileStream(HighScoreFilename, FileMode.Create)) {
@@ -376,7 +377,6 @@ namespace ImpressiveSolids {
                 }
             }
 
-            // HUD offset
             GL.Translate(MapWidth * SolidSize + PipeMarginX, 0, 0);
 
             NextStickLabel.Render();
@@ -414,7 +414,6 @@ namespace ImpressiveSolids {
             GL.Translate(0, HighScoreLabel.Height, 0);
             HighScoreRenderer.Label = HighScore.ToString();
             HighScoreRenderer.Render();
-            GL.Translate(0, -HighScoreLabel.Height, 0);
 
             SwapBuffers();
         }
