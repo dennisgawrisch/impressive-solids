@@ -122,6 +122,12 @@ namespace ImpressiveSolids {
 
         protected override void OnLoad(EventArgs E) {
             base.OnLoad(E);
+
+            GL.Enable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Blend);
+
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
             New();
             Paused = true;
         }
@@ -167,6 +173,11 @@ namespace ImpressiveSolids {
                 ProjectionHeight = NominalHeight;
                 ProjectionWidth = (float)ClientRectangle.Width / (float)ClientRectangle.Height * ProjectionHeight;
             }
+
+            var Projection = Matrix4.CreateOrthographic(-ProjectionWidth, -ProjectionHeight, -1, 1);
+            GL.MatrixMode(MatrixMode.Projection);
+            GL.LoadMatrix(ref Projection);
+            GL.Translate(ProjectionWidth / 2, -ProjectionHeight / 2, 0);
 
             if (ClientSize.Width < NominalWidth) {
                 ClientSize = new Size(NominalWidth, ClientSize.Height);
@@ -333,22 +344,9 @@ namespace ImpressiveSolids {
         protected override void OnRenderFrame(FrameEventArgs E) {
             base.OnRenderFrame(E);
 
-            GL.ClearColor(Color4.Black);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            var Projection = Matrix4.CreateOrthographic(-ProjectionWidth, -ProjectionHeight, -1, 1);
-            GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadMatrix(ref Projection);
-            GL.Translate(ProjectionWidth / 2, -ProjectionHeight / 2, 0);
-
             var Modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitZ, Vector3.UnitY);
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref Modelview);
-
-            GL.Enable(EnableCap.Texture2D);
-            GL.Enable(EnableCap.Blend);
-
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             RenderBackground();
 
@@ -423,6 +421,7 @@ namespace ImpressiveSolids {
 
         private void RenderBackground() {
             TextureBackground.Bind();
+            GL.Color4(Color4.White);
             GL.Begin(BeginMode.Quads);
 
             GL.TexCoord2(0, 0);
