@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Text;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -49,8 +50,13 @@ namespace ImpressiveSolids {
         private const int DestroyableLength = 3;
         private Stack<Vector2> Destroyables = new Stack<Vector2>();
 
+        private int Score;
+        private int HighScore;
+
         private Texture TextureBackground;
         private Texture[] ColorTextures = new Texture[ColorsCount];
+
+        private TextRenderer NextStickLabel, ScoreLabel, ScoreRenderer, HighScoreLabel, HighScoreRenderer, GameOverLabel, GameOverHint;
 
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
@@ -62,6 +68,25 @@ namespace ImpressiveSolids {
             for (var i = 0; i < ColorsCount; i++) {
                 ColorTextures[i] = new Texture(new Bitmap("textures/solids/" + i + ".png"));
             }
+
+            var LabelFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 20, GraphicsUnit.Pixel);
+            var LabelColor = Color4.SteelBlue;
+            NextStickLabel = new TextRenderer(LabelFont, LabelColor, "Next");
+            ScoreLabel = new TextRenderer(LabelFont, LabelColor, "Score");
+            HighScoreLabel = new TextRenderer(LabelFont, LabelColor, "High score");
+
+            var ScoreFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 50, GraphicsUnit.Pixel);
+            var ScoreColor = Color4.Tomato;
+            ScoreRenderer = new TextRenderer(ScoreFont, ScoreColor);
+            HighScoreRenderer = new TextRenderer(ScoreFont, ScoreColor);
+
+            var GameStateFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 30, GraphicsUnit.Pixel);
+            var GameStateColor = Color4.Tomato;
+            GameOverLabel = new TextRenderer(GameStateFont, GameStateColor, "Game over");
+
+            var GameStateHintFont = new Font(new FontFamily(GenericFontFamilies.SansSerif), 25, GraphicsUnit.Pixel);
+            var GameStateHintColor = Color4.SteelBlue;
+            GameOverHint = new TextRenderer(GameStateHintFont, GameStateHintColor, "Press Enter");
         }
 
         protected override void OnLoad(EventArgs E) {
@@ -282,6 +307,32 @@ namespace ImpressiveSolids {
                     RenderSolid(StickPosition.X + i, StickPosition.Y, StickColors[i]);
                 }
             }
+
+            GL.Translate(MapWidth * SolidSize + PipeMarginX, 0, 0);
+
+            NextStickLabel.Render();
+            // TODO вывести собственно next stick
+
+            GL.Translate(0, MapHeight * SolidSize / 4f, 0);
+            if (GameStateEnum.GameOver == GameState) {
+                GameOverLabel.Render();
+                GL.Translate(0, GameOverLabel.Height, 0);
+                GameOverHint.Render();
+                GL.Translate(0, -GameOverLabel.Height, 0);
+            }
+
+            GL.Translate(0, MapHeight * SolidSize / 4f, 0);
+            ScoreLabel.Render();
+            GL.Translate(0, ScoreLabel.Height, 0);
+            ScoreRenderer.Label = Score.ToString();
+            ScoreRenderer.Render();
+            GL.Translate(0, -ScoreLabel.Height, 0);
+
+            GL.Translate(0, MapHeight * SolidSize / 4f, 0);
+            HighScoreLabel.Render();
+            GL.Translate(0, HighScoreLabel.Height, 0);
+            HighScoreRenderer.Label = HighScore.ToString();
+            HighScoreRenderer.Render();
 
             SwapBuffers();
         }
