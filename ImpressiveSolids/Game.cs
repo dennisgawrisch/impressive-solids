@@ -35,6 +35,7 @@ namespace ImpressiveSolids {
         private const int StickLength = 3;
         private int[] StickColors;
         private Vector2 StickPosition;
+        private int[] NextStickColors;
 
         private const float FallSpeed = 0.2f;
 
@@ -113,13 +114,16 @@ namespace ImpressiveSolids {
             ImpactFallOffset = new float[MapWidth, MapHeight];
 
             StickColors = new int[StickLength];
+            NextStickColors = new int[StickLength];
             GenerateNextStick();
+            GenerateNextStick(); // because 1st call makes current stick all zeros
             GameState = GameStateEnum.Fall;
         }
 
         private void GenerateNextStick() {
             for (var i = 0; i < StickLength; i++) {
-                StickColors[i] = Rand.Next(ColorsCount);
+                StickColors[i] = NextStickColors[i];
+                NextStickColors[i] = Rand.Next(ColorsCount);
             }
             StickPosition.X = (float)Math.Floor((MapWidth - StickLength) / 2d);
             StickPosition.Y = 0;
@@ -311,7 +315,9 @@ namespace ImpressiveSolids {
             GL.Translate(MapWidth * SolidSize + PipeMarginX, 0, 0);
 
             NextStickLabel.Render();
-            // TODO вывести собственно next stick
+            GL.Translate(0, NextStickLabel.Height, 0);
+            RenderNextStick();
+            GL.Translate(0, -NextStickLabel.Height, 0);
 
             GL.Translate(0, MapHeight * SolidSize / 4f, 0);
             if (GameStateEnum.GameOver == GameState) {
@@ -389,6 +395,24 @@ namespace ImpressiveSolids {
             GL.Vertex2(X * SolidSize, (Y + 1) * SolidSize);
 
             GL.End();
+        }
+
+        public void RenderNextStick() {
+            GL.Disable(EnableCap.Texture2D);
+            GL.Color4(Color4.Black);
+
+            GL.Begin(BeginMode.Quads);
+            GL.Vertex2(0, 0);
+            GL.Vertex2(StickLength * SolidSize, 0);
+            GL.Vertex2(StickLength * SolidSize, SolidSize);
+            GL.Vertex2(0, SolidSize);
+            GL.End();
+
+            GL.Enable(EnableCap.Texture2D);
+
+            for (var i = 0; i < StickLength; i++) {
+                RenderSolid(i, 0, NextStickColors[i]);
+            }
         }
     }
 }
