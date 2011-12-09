@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -37,7 +38,6 @@ namespace ImpressiveSolids {
         private const float FallSpeed = 0.2f;
 
         private const int ColorsCount = 5;
-        private Color4[] Colors = {Color4.PaleVioletRed, Color4.LightSeaGreen, Color4.CornflowerBlue, Color4.RosyBrown, Color4.LightGoldenrodYellow};
 
         private enum GameStateEnum {
             Fall,
@@ -49,14 +49,29 @@ namespace ImpressiveSolids {
         private const int DestroyableLength = 3;
         private Stack<Vector2> Destroyables = new Stack<Vector2>();
 
+        private Texture TextureBackground;
+        private Texture[] ColorTextures = new Texture[ColorsCount];
+
         public Game()
             : base(NominalWidth, NominalHeight, GraphicsMode.Default, "Impressive Solids") {
             VSync = VSyncMode.On;
+
             Keyboard.KeyDown += new EventHandler<KeyboardKeyEventArgs>(OnKeyDown);
+
+            TextureBackground = new Texture(new Bitmap("textures/background.png"));
+            for (var i = 0; i < ColorsCount; i++) {
+                ColorTextures[i] = new Texture(new Bitmap("textures/solids/" + i + ".png"));
+            }
         }
 
         protected override void OnLoad(EventArgs E) {
             base.OnLoad(E);
+
+            GL.Enable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Blend);
+
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
             New();
         }
 
@@ -223,9 +238,6 @@ namespace ImpressiveSolids {
         protected override void OnRenderFrame(FrameEventArgs E) {
             base.OnRenderFrame(E);
 
-            GL.ClearColor(Color4.Black);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
             var Projection = Matrix4.CreateOrthographic(-ProjectionWidth, -ProjectionHeight, -1, 1);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref Projection);
@@ -235,7 +247,7 @@ namespace ImpressiveSolids {
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref Modelview);
 
-            GL.Begin(BeginMode.Quads);
+            RenderBackground();
 
             for (var X = 0; X < MapWidth; X++) {
                 for (var Y = 0; Y < MapHeight; Y++) {
@@ -251,17 +263,47 @@ namespace ImpressiveSolids {
                 }
             }
 
-            GL.End();
-
             SwapBuffers();
         }
 
+        private void RenderBackground() {
+            TextureBackground.Bind();
+            GL.Color4(Color4.White);
+            GL.Begin(BeginMode.Quads);
+
+            GL.TexCoord2(0, 0);
+            GL.Vertex2(0, 0);
+
+            GL.TexCoord2((float)ClientRectangle.Width / TextureBackground.Width, 0);
+            GL.Vertex2(ProjectionWidth, 0);
+
+            GL.TexCoord2((float)ClientRectangle.Width / TextureBackground.Width, (float)ClientRectangle.Height / TextureBackground.Height);
+            GL.Vertex2(ProjectionWidth, ProjectionHeight);
+
+            GL.TexCoord2(0, (float)ClientRectangle.Height / TextureBackground.Height);
+            GL.Vertex2(0, ProjectionHeight);
+
+            GL.End();
+        }
+
         private void RenderSolid(float X, float Y, int Color) {
-            GL.Color4(Colors[Color]);
+            ColorTextures[Color].Bind();
+            GL.Color4(Color4.White);
+            GL.Begin(BeginMode.Quads);
+
+            GL.TexCoord2(0, 0);
             GL.Vertex2(X * SolidSize, Y * SolidSize);
+
+            GL.TexCoord2(1, 0);
             GL.Vertex2((X + 1) * SolidSize, Y * SolidSize);
+
+            GL.TexCoord2(1, 1);
             GL.Vertex2((X + 1) * SolidSize, (Y + 1) * SolidSize);
+
+            GL.TexCoord2(0, 1);
             GL.Vertex2(X * SolidSize, (Y + 1) * SolidSize);
+
+            GL.End();
         }
     }
 }
