@@ -93,7 +93,9 @@
     <None Include="Properties\app.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ImpressiveSolids.ico" />
+    <Content Include="ImpressiveSolids.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="textures\background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -138,4 +140,11 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Deployment.LinuxDeployData scriptName="impressive-solids" />
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
 </Project>
