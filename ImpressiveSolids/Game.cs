@@ -10,10 +10,12 @@ using OpenTK.Input;
 
 namespace ImpressiveSolids {
     class Game : GameWindow {
+        private const float updateRate = 100;
+
         [STAThread]
         static void Main() {
             using (var Game = new Game()) {
-                Game.Run(30);
+                Game.Run(updateRate);
             }
         }
 
@@ -38,8 +40,8 @@ namespace ImpressiveSolids {
         private Vector2 StickPosition;
         private int[] NextStickColors;
 
-        private const float FallSpeed = 0.07f;
-        private const float FastFallSpeed = 0.5f;
+        private const float FallSpeed = 1.5f / updateRate;
+        private const float FastFallSpeed = 10f / updateRate;
 
         private const int ColorsCount = 5;
 
