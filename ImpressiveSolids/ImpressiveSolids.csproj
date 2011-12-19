@@ -28,7 +28,7 @@
     <PublisherName>Denys Popov</PublisherName>
     <AutorunEnabled>true</AutorunEnabled>
     <ApplicationRevision>7</ApplicationRevision>
-    <ApplicationVersion>3.0.0.%2a</ApplicationVersion>
+    <ApplicationVersion>4.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
