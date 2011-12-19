@@ -144,7 +144,7 @@
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
-        <Deployment.LinuxDeployData scriptName="impressive-solids" />
+        <Deployment.LinuxDeployData scriptName="impressive-solids.rc" />
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
